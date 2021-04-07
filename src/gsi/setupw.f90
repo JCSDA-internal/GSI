@@ -1756,8 +1756,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            call nc_diag_metadata("Height",                  sngl(data(ihgt,i))     )
            call nc_diag_metadata("Time",                    sngl(dtime-time_offset))
 ! H. ZHANG 20210113
-           call nc_diag_metadata("LaunchTime",              sngl(data(idft,i))
-)
+           call nc_diag_metadata("LaunchTime",              sngl(data(idft,i)))
 ! H. ZHANG 20210113
            call nc_diag_metadata("Prep_QC_Mark",            sngl(data(iqc,i))      )
 !           call nc_diag_metadata("Setup_QC_Mark",           rmiss_single           )
