@@ -2233,11 +2233,14 @@ subroutine read_prepbufr(nread,ndata,nodata,infile,obstype,lunout,twindin,sis,&
                  cdata_all(24,iout)=obsdat(10,k)           ! cat
                  cdata_all(25,iout)=var_jb(5,k)            ! non linear qc parameter
                  cdata_all(26,iout)=one                    ! hilbert curve weight, modified later 
-                 cdata_all(27,iout)=time_launch
+                 cdata_all(27,iout)=time_launch            ! rawinsonde launch time
+                 cdata_all(28,iout)=hdrdat(9)              ! SWCM, spectral type 1-5
+                 cdata_all(29,iout)=hdrdat(10)             ! SAZA
+                 cdata_all(30,iout)=hdrdat(12)             ! SCCF, spectral wavenumber
 
                  if(perturb_obs)then
-                    cdata_all(28,iout)=ran01dom()*perturb_fact ! u perturbation
-                    cdata_all(29,iout)=ran01dom()*perturb_fact ! v perturbation
+                    cdata_all(31,iout)=ran01dom()*perturb_fact ! u perturbation
+                    cdata_all(32,iout)=ran01dom()*perturb_fact ! v perturbation
                  endif
  
               else if(spdob) then 
