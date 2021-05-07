@@ -267,7 +267,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   real(r_kind) oscat_vec,ascat_vec,rapidscat_vec
   real(r_kind),dimension(nele,nobs):: data
   real(r_kind),dimension(nobs):: dup
-  real(r_kind),dimension(nsig)::prsltmp,tsentmp,qtmp,tges,qges,zges
+  real(r_kind),dimension(nsig)::prsltmp,tsentmp,tges,qges,zges
   real(r_kind),dimension(nsig+1)::prsitmp
   real(r_kind) wdirob,wdirgesin,wdirdiffmax
   real(r_kind),dimension(34)::ptabluv
@@ -287,6 +287,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   integer(i_kind) izz,iprvd,isprvd
   integer(i_kind) idomsfc,isfcr,iskint,iff10
   integer(i_kind) ibb,ikk,ihil
+  integer(i_kind) idft, iswcm, isaza, isccf
 
   integer(i_kind) num_bad_ikx
 
@@ -378,8 +379,12 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   icat=24     ! index of data level category
   ijb=25      ! index of non linear qc parameter
   ihil=26     ! index of  hilbert curve weight
-  iptrbu=27   ! index of u perturbation
-  iptrbv=28   ! index of v perturbation
+  idft=27     ! index of sonde profile launch time
+  iswcm=28    ! index of SWCM, spectral type 1-5
+  isaza=29    ! index of solar zenith angle
+  isccf=30    ! index of spectral central frequency
+  iptrbu=31   ! index of u perturbation
+  iptrbv=32   ! index of v perturbation
 
   mm1=mype+1
   scale=one
@@ -546,7 +551,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
           nsig+1,mype,nfldsig)
      call tintrp2a1(ges_tsen,tsentmp,dlat,dlon,dtime,hrdifsig,&
           nsig,mype,nfldsig)
-     call tintrp2a1(ges_q,qtmp,dlat,dlon,dtime,hrdifsig,&
+     call tintrp2a1(ges_q,qges,dlat,dlon,dtime,hrdifsig,&
           nsig,mype,nfldsig)
      call tintrp2a1(ges_u,uges,dlat,dlon,dtime,hrdifsig,&
           nsig,mype,nfldsig)
@@ -1779,6 +1784,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            call nc_diag_metadata("Pressure",                sngl(presw)            )
            call nc_diag_metadata("Height",                  sngl(data(ihgt,i))     )
            call nc_diag_metadata("Time",                    sngl(dtime-time_offset))
+           call nc_diag_metadata("LaunchTime",              sngl(data(idft,i))     )
            call nc_diag_metadata("Prep_QC_Mark",            sngl(data(iqc,i))      )
 !           call nc_diag_metadata("Setup_QC_Mark",           rmiss_single           )
            call nc_diag_metadata("Setup_QC_Mark",           sngl(bmiss)            )
@@ -1891,9 +1897,8 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            call nc_diag_data2d("geopotential_height", sngl(zges+zsges))
            call nc_diag_data2d("eastward_wind", sngl(uges))
            call nc_diag_data2d("northward_wind", sngl(vges))
-           call nc_diag_data2d("specific_humidity", sngl(qges))
            call nc_diag_data2d("air_temperature", sngl(tsentmp))
-           call nc_diag_data2d("specific_humidity", sngl(qtmp))
+           call nc_diag_data2d("specific_humidity", sngl(qges))
            call nc_diag_metadata("surface_temperature",sngl(skint))
            call nc_diag_metadata("surface_roughness", sngl(sfcr/r100))
            call nc_diag_metadata("landmask",sngl(msges))
