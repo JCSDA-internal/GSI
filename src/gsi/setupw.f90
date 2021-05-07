@@ -267,8 +267,9 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   real(r_kind) oscat_vec,ascat_vec,rapidscat_vec
   real(r_kind),dimension(nele,nobs):: data
   real(r_kind),dimension(nobs):: dup
-  real(r_kind),dimension(nsig)::prsltmp,tsentmp,tges,qges,zges,uges,vges
   real(r_kind),dimension(nsig+1)::prsitmp
+  real(r_kind),dimension(nsig)::prsltmp,tges,zges
+  real(r_kind),dimension(nsig)::tsentmp,qtmp,zges_read,uges,vges,prsltmp2
   real(r_kind) wdirob,wdirgesin,wdirdiffmax
   real(r_kind),dimension(34)::ptabluv
   real(r_single),allocatable,dimension(:,:)::rdiagbuf
@@ -288,7 +289,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   integer(i_kind) idomsfc,isfcr,iskint,iff10
   integer(i_kind) ibb,ikk,ihil
 
-  integer(i_kind) idft, iswcm, isaza, isccf, qify, qifn
+  integer(i_kind) iswcm,isaza, isccf, qify, qifn
   real(r_kind)    sccf_wavelen
   real(r_kind),parameter:: rsol=300000000.0_r_kind !speed of light
   real(r_kind),parameter:: rtomic=1000000.0_r_kind !conv to micron
@@ -384,9 +385,10 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   ijb=25      ! index of non linear qc parameter
   ihil=26     ! index of  hilbert curve weight
   idft=27     ! index of sonde profile launch time
-  iswcm=28    ! index of SWCM, spectral type 1-5
-  isaza=29    ! index of solar zenith angle
-  isccf=30    ! index of spectral central frequency
+  iswcm=28    ! spectral type of wind
+  isaza=29    ! saza satellite zen angle
+  isccf=30    ! spec chan freq (hertz)
+
   iptrbu=31   ! index of u perturbation
   iptrbv=32   ! index of v perturbation
 
@@ -1826,6 +1828,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
              call nc_diag_metadata("QI_with_FC",    sngl(qify))
              call nc_diag_metadata("QI_without_FC", sngl(qifn))
            else
+! Write out missing values)
              call nc_diag_metadata("SWCM_spec_type",          sngl(bmiss))
              call nc_diag_metadata("SAZA_sat_zen_angle",      sngl(bmiss))
              call nc_diag_metadata("SCCF_chan_wavelen",       sngl(bmiss))
@@ -1903,23 +1906,19 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
               call nc_diag_data2d("v_Observation_Operator_Jacobian_val", real(dhx_dx_v%val,r_single))
            endif
 
-           ! For consistency with all other variable files (t, q, ps, etc.) save
-           ! a bunch of additional variables.
-
-           call nc_diag_metadata("Dominant_Sfc_Type", data(idomsfc,i)              )
-           call nc_diag_metadata("surface_pressure",sngl(psges*r1000))
-           call nc_diag_metadata("surface_geopotential_height",sngl(zsges))
-           call nc_diag_data2d("geopotential_height", sngl(zges+zsges))
-           call nc_diag_data2d("atmosphere_pressure_coordinate", sngl(prsltmp*r1000))
-           call nc_diag_data2d("atmosphere_pressure_coordinate_interface", sngl(prsitmp*r1000))
-           call nc_diag_data2d("virtual_temperature", sngl(tges))
-           call nc_diag_data2d("eastward_wind", sngl(uges))
-           call nc_diag_data2d("northward_wind", sngl(vges))
+           call nc_diag_metadata("surface_pressure",psges*r1000)
+           call nc_diag_metadata("surface_height",zsges)
+           call nc_diag_data2d("atmosphere_pressure_coordinate", prsltmp2*r1000)
+           call nc_diag_data2d("atmosphere_pressure_coordinate_interface", prsitmp*r1000)
+           call nc_diag_data2d("virtual_temperature", tges)
+           call nc_diag_data2d("geopotential_height", zges_read+zsges)
+           call nc_diag_data2d("eastward_wind", uges)
+           call nc_diag_data2d("northward_wind", vges)
            call nc_diag_data2d("air_temperature", sngl(tsentmp))
-           call nc_diag_data2d("specific_humidity", sngl(qges))
-           call nc_diag_metadata("skin_temperature",sngl(skint))
-           call nc_diag_metadata("surface_roughness", sngl(sfcr/r100))
-
+!          call nc_diag_metadata("surface_temperature",sngl(skint))
+!          call nc_diag_metadata("surface_roughness", sngl(sfcr/r100))
+!          call nc_diag_metadata("landmask",sngl(msges))
+           call nc_diag_data2d("specific_humidity", qtmp)
 
   end subroutine contents_netcdf_diag_
 
