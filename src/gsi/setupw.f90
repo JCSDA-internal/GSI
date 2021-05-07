@@ -269,7 +269,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   real(r_kind),dimension(nobs):: dup
   real(r_kind),dimension(nsig+1)::prsitmp
   real(r_kind),dimension(nsig)::prsltmp,tges,zges,qges
-  real(r_kind),dimension(nsig)::tsentmp,qtmp,zges_read,uges,vges,prsltmp2
+  real(r_kind),dimension(nsig)::tsentmp,zges_read,uges,vges,prsltmp2
   real(r_kind) wdirob,wdirgesin,wdirdiffmax
   real(r_kind),dimension(34)::ptabluv
   real(r_single),allocatable,dimension(:,:)::rdiagbuf
@@ -1906,19 +1906,23 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
               call nc_diag_data2d("v_Observation_Operator_Jacobian_val", real(dhx_dx_v%val,r_single))
            endif
 
-           call nc_diag_metadata("surface_pressure",psges*r1000)
-           call nc_diag_metadata("surface_height",zsges)
-           call nc_diag_data2d("atmosphere_pressure_coordinate", prsltmp2*r1000)
-           call nc_diag_data2d("atmosphere_pressure_coordinate_interface", prsitmp*r1000)
-           call nc_diag_data2d("virtual_temperature", tges)
-           call nc_diag_data2d("geopotential_height", zges_read+zsges)
-           call nc_diag_data2d("eastward_wind", uges)
-           call nc_diag_data2d("northward_wind", vges)
+           ! For consistency with all other variable files (t, q, ps, etc.) save
+           ! a bunch of additional variables.
+
+           call nc_diag_metadata("Dominant_Sfc_Type", data(idomsfc,i)              )
+           call nc_diag_metadata("surface_pressure",sngl(psges*r1000))
+           call nc_diag_metadata("surface_geopotential_height",sngl(zsges))
+           call nc_diag_data2d("geopotential_height", sngl(zges+zsges))
+           call nc_diag_data2d("atmosphere_pressure_coordinate", sngl(prsltmp*r1000))
+           call nc_diag_data2d("atmosphere_pressure_coordinate_interface", sngl(prsitmp*r1000))
+           call nc_diag_data2d("virtual_temperature", sngl(tges))
+           call nc_diag_data2d("eastward_wind", sngl(uges))
+           call nc_diag_data2d("northward_wind", sngl(vges))
            call nc_diag_data2d("air_temperature", sngl(tsentmp))
-!          call nc_diag_metadata("surface_temperature",sngl(skint))
-!          call nc_diag_metadata("surface_roughness", sngl(sfcr/r100))
-!          call nc_diag_metadata("landmask",sngl(msges))
-           call nc_diag_data2d("specific_humidity", qtmp)
+           call nc_diag_data2d("specific_humidity", sngl(qges))
+           call nc_diag_metadata("skin_temperature",sngl(skint))
+           call nc_diag_metadata("surface_roughness", sngl(sfcr/r100))
+
 
   end subroutine contents_netcdf_diag_
 
