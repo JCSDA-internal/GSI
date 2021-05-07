@@ -55,7 +55,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   use guess_grids, only: tropprs,sfcmod_mm5
   use guess_grids, only: ges_lnprsl,ges_prsi,ges_tsen,comp_fact10,pbl_height
   use constants, only: zero,half,one,tiny_r_kind,two, &
-           three,rd,grav,four,five,huge_single,r1000,wgtlim,r10,r400
+           three,rd,grav,four,five,huge_single,r1000,wgtlim,r10,r400,r100
   use constants, only: grav_ratio,flattening,deg2rad, &
        grav_equator,somigliana,semi_major_axis,eccentricity
   use jfunc, only: jiter,last,jiterstart,miter
@@ -256,7 +256,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   real(r_kind) cg_t,cvar,wgt,term,rat_err2,qcgross
   real(r_kind) presw,factw,dpres,ugesin,vgesin,rwgt,dpressave
   real(r_kind) sfcchk,prsln2,error,dtime,dlon,dlat,r0_001,rsig,thirty,rsigp
-  real(r_kind) ratio_errors,goverrd,spdges,spdob,ten,psges,zsges,uges,vges
+  real(r_kind) ratio_errors,goverrd,spdges,spdob,ten,psges,zsges
   real(r_kind) slat,sin2,termg,termr,termrg,pobl,uob,vob
   real(r_kind) uob_reg,vob_reg,uob_e,vob_e,dlon_e,uges_e,vges_e,dudiff_e,dvdiff_e
   real(r_kind) dz,zob,z1,z2,p1,p2,dz21,dlnp21,spdb,dstn
@@ -267,7 +267,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   real(r_kind) oscat_vec,ascat_vec,rapidscat_vec
   real(r_kind),dimension(nele,nobs):: data
   real(r_kind),dimension(nobs):: dup
-  real(r_kind),dimension(nsig)::prsltmp,tsentmp,tges,qges,zges
+  real(r_kind),dimension(nsig)::prsltmp,tsentmp,tges,qges,zges,uges,vges
   real(r_kind),dimension(nsig+1)::prsitmp
   real(r_kind) wdirob,wdirgesin,wdirdiffmax
   real(r_kind),dimension(34)::ptabluv
@@ -382,8 +382,8 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   isprvd=23   ! index of observation subprovider
   icat=24     ! index of data level category
   ijb=25      ! index of non linear qc parameter
-  ihil=26     ! index of  hilbert curve weight
-  idft=27     ! index of sonde profile launch time
+  idft=26     ! index of sonde profile launch time
+  ihil=27     ! index of  hilbert curve weight
   iswcm=28    ! index of SWCM, spectral type 1-5
   isaza=29    ! index of solar zenith angle
   isccf=30    ! index of spectral central frequency
