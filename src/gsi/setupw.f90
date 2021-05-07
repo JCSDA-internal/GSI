@@ -256,7 +256,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   real(r_kind) cg_t,cvar,wgt,term,rat_err2,qcgross
   real(r_kind) presw,factw,dpres,ugesin,vgesin,rwgt,dpressave
   real(r_kind) sfcchk,prsln2,error,dtime,dlon,dlat,r0_001,rsig,thirty,rsigp
-  real(r_kind) ratio_errors,goverrd,spdges,spdob,ten,psges,zsges,uges,vges
+  real(r_kind) ratio_errors,goverrd,spdges,spdob,ten,psges,zsges,uges,vges,q2ges
   real(r_kind) slat,sin2,termg,termr,termrg,pobl,uob,vob
   real(r_kind) uob_reg,vob_reg,uob_e,vob_e,dlon_e,uges_e,vges_e,dudiff_e,dvdiff_e
   real(r_kind) dz,zob,z1,z2,p1,p2,dz21,dlnp21,spdb,dstn
@@ -273,7 +273,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   real(r_kind),dimension(34)::ptabluv
   real(r_single),allocatable,dimension(:,:)::rdiagbuf
 
-  integer(i_kind) i,nchar,nreal,k,j,l,ii,itype,ijb
+  integer(i_kind) i,nchar,nreal,k,j,l,ii,itype,msges,ijb
 ! Variables needed for new polar winds QC based on Log Normalized Vector Departure (LNVD)
   real(r_kind) LNVD_wspd
   real(r_kind) LNVD_omb
@@ -332,6 +332,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   real(r_kind),allocatable,dimension(:,:,:,:) :: ges_v
   real(r_kind),allocatable,dimension(:,:,:,:) :: ges_q
   real(r_kind),allocatable,dimension(:,:,:,:) :: ges_tv
+  real(r_kind),allocatable,dimension(:,:,:  ) :: ges_q2
 
   type(obsLList),pointer,dimension(:):: whead
   whead => obsLL(:)
@@ -578,8 +579,15 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
 !    geopotenital height.  Some type 221=pibal wind observations are
 !    also repoted using geopotential height.
 
+     msges = 2
      sfc_data = (itype >=280 .and. itype < 300)
      if (z_height .or. sfc_data) then
+
+        if(itype == 280 .or. itype == 282 .or. itype == 283 .or. itype == 299) then    !sea
+           msges=0
+        elseif(itype == 281 .or. itype == 287 .or. itype == 288) then  !land
+           msges=1
+        endif
 
         drpx = zero
         dpres = data(ihgt,i)
@@ -1612,6 +1620,24 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
          write(6,*) trim(myname),': ', trim(varname), ' not found in met bundle, ier= ',istatus
          call stop2(999)
      endif
+!    get q2m ...
+     varname='q2m'
+     call gsi_bundlegetpointer(gsi_metguess_bundle(1),trim(varname),rank2,istatus)
+     if (istatus==0) then
+         if(allocated(ges_q2))then
+            write(6,*) trim(myname), ': ', trim(varname), ' already incorrectly alloc '
+            call stop2(999)
+         endif
+         allocate(ges_q2(size(rank2,1),size(rank2,2),nfldsig))
+         ges_q2(:,:,1)=rank2
+         do ifld=2,nfldsig
+            call gsi_bundlegetpointer(gsi_metguess_bundle(ifld),trim(varname),rank2,istatus)
+            ges_q2(:,:,ifld)=rank2
+         enddo
+     else
+         write(6,*) trim(myname),': ', trim(varname), ' not found in met bundle, ier= ',istatus
+         call stop2(999)
+     endif
   else
      write(6,*) trim(myname), ': inconsistent vector sizes (nfldsig,size(metguess_bundle) ',&
                  nfldsig,size(gsi_metguess_bundle)
@@ -1890,11 +1916,11 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            ! a bunch of additional variables.
 
            call nc_diag_metadata("surface_pressure",sngl(psges*r1000))
-           call nc_diag_metadata("surface_height",sngl(zsges))
+           call nc_diag_metadata("surface_geopotential_height",sngl(zsges))
+           call nc_diag_data2d("geopotential_height", sngl(zges+zsges))
            call nc_diag_data2d("atmosphere_pressure_coordinate", sngl(prsltmp*r1000))
            call nc_diag_data2d("atmosphere_pressure_coordinate_interface", sngl(prsitmp*r1000))
            call nc_diag_data2d("virtual_temperature", sngl(tges))
-           call nc_diag_data2d("geopotential_height", sngl(zges+zsges))
            call nc_diag_data2d("eastward_wind", sngl(uges))
            call nc_diag_data2d("northward_wind", sngl(vges))
            call nc_diag_data2d("air_temperature", sngl(tsentmp))
@@ -1913,6 +1939,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
     if(allocated(ges_z )) deallocate(ges_z )
     if(allocated(ges_q )) deallocate(ges_q )
     if(allocated(ges_ps)) deallocate(ges_ps)
+    if(allocated(ges_q2)) deallocate(ges_q2)
   end subroutine final_vars_
 
 end subroutine setupw
