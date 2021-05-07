@@ -382,8 +382,8 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   isprvd=23   ! index of observation subprovider
   icat=24     ! index of data level category
   ijb=25      ! index of non linear qc parameter
-  idft=26     ! index of sonde profile launch time
-  ihil=27     ! index of  hilbert curve weight
+  ihil=26     ! index of  hilbert curve weight
+  idft=27     ! index of sonde profile launch time
   iswcm=28    ! index of SWCM, spectral type 1-5
   isaza=29    ! index of solar zenith angle
   isccf=30    ! index of spectral central frequency
