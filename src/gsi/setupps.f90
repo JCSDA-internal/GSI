@@ -176,6 +176,7 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
   real(r_kind),dimension(nobs):: dup
   real(r_kind),dimension(nsig):: prsltmp
   real(r_kind),dimension(nsig):: zges, prsltmp2, tvgestmp, tsentmp, qtmp, utmp, vtmp
+  real(r_kind) :: tgges,roges
   real(r_kind),dimension(nsig+1):: prsitmp
   real(r_kind),dimension(nele,nobs):: data
   real(r_single),allocatable,dimension(:,:)::rdiagbuf
@@ -186,6 +187,7 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
   integer(i_kind) i,nchar,nreal,ii,jj,k,l,mm1
   integer(i_kind) itype,isubtype 
   integer(i_kind) ibb,ikk
+  integer(i_kind) msges
 
   logical,dimension(nobs):: luse,muse
   integer(i_kind),dimension(nobs):: ioid ! initial (pre-distribution) obs ID
@@ -404,6 +406,15 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
     ! winds
     call tintrp2a1(ges_u,utmp,dlat,dlon,dtime,hrdifsig,nsig,mype,nfldsig)
     call tintrp2a1(ges_v,vtmp,dlat,dlon,dtime,hrdifsig,nsig,mype,nfldsig)
+    ! landmask
+    msges = 0
+    if(itype == 180 .or. itype == 182 .or. itype == 183 .or. itype == 199) then    !sea
+      msges=0
+    elseif(itype == 181 .or. itype == 187 .or. itype == 188) then  !land
+      msges=1
+    endif
+    
+
 
 ! Convert pressure to grid coordinates
 
@@ -795,6 +806,7 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
      else
          write(6,*) trim(myname),': ', trim(varname), ' not found in met bundle, ier= ',istatus
          call stop2(999)
+     endif
 !    get v ...
      varname='v'
      call gsi_bundlegetpointer(gsi_metguess_bundle(1),trim(varname),rank3,istatus)
@@ -812,6 +824,7 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
      else
          write(6,*) trim(myname),': ', trim(varname), ' not found in met bundle, ier= ',istatus
          call stop2(999)
+     endif
   else
      write(6,*) trim(myname), ': inconsistent vector sizes (nfldsig,size(metguess_bundle) ',&
                  nfldsig,size(gsi_metguess_bundle)
@@ -994,20 +1007,22 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
            endif
            ! geovals for JEDI UFO
            call nc_diag_metadata("surface_geopotential_height", sngl(zsges))
-           call nc_diag_metadata("surface_air_pressure", sngl(pgesorig*r100))
-           call nc_diag_metadata("surface_roughness", sngl())
-           call nc_diag_metadata("surface_height", sngl())
-           call nc_diag_metadata("surface_temperature", sngl())
-           call nc_diag_metadata("surface_specific_humidity", sngl())
-           call nc_diag_metadata("landmask", sngl())
-           call nc_data_data2d("geopotential_height", sngl(zsges+zges))
-           call nc_data_data2d("atmosphere_pressure_coordinate", sngl(prsltmp2*r1000))
-           call nc_data_data2d("atmosphere_pressure_coordinate_interface", sngl(prsitmp*r1000))
-           call nc_data_data2d("virtual_temperature", sngl(tvgestmp))
-           call nc_data_data2d("air_temperature", sngl(tsentmp))
-           call nc_data_data2d("specific_humidity", sngl(qtmp))
-           call nc_data_data2d("northward_wind", sngl(utmp))
-           call nc_data_data2d("eastward_wind", sngl(vtmp))
+           call nc_diag_metadata("surface_pressure", sngl(pgesorig*r100))
+           !call nc_diag_metadata("surface_roughness", sngl())
+           !call nc_diag_metadata("surface_height", sngl())
+           !call nc_diag_metadata("skin_temperature", sngl(tgges))
+           !call nc_diag_metadata("2m_temperature", sngl(tgges))
+           !call nc_diag_metadata("2m_specific_humidity", sngl())
+           call nc_diag_metadata("landmask", sngl(msges))
+           call nc_diag_data2d("geopotential_height", sngl(zsges+zges))
+           call nc_diag_data2d("atmosphere_pressure_coordinate", sngl(prsltmp2*r1000))
+           call nc_diag_data2d("atmosphere_pressure_coordinate_interface", sngl(prsitmp*r1000))
+           call nc_diag_data2d("virtual_temperature", sngl(tvgestmp))
+           call nc_diag_data2d("air_temperature", sngl(tsentmp))
+           call nc_diag_data2d("specific_humidity", sngl(qtmp))
+           call nc_diag_data2d("northward_wind", sngl(utmp))
+           call nc_diag_data2d("eastward_wind", sngl(vtmp))
+
 
   end subroutine contents_netcdf_diag_
 
