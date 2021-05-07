@@ -287,7 +287,11 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   integer(i_kind) izz,iprvd,isprvd
   integer(i_kind) idomsfc,isfcr,iskint,iff10
   integer(i_kind) ibb,ikk,ihil
-  integer(i_kind) idft, iswcm, isaza, isccf
+
+  integer(i_kind) idft, iswcm, isaza, isccf, qify, qifn
+  real(r_kind)    sccf_wavelen
+  real(r_kind),parameter:: rsol=300000000.0_r_kind !speed of light
+  real(r_kind),parameter:: rtomic=1000000.0_r_kind !conv to micron
 
   integer(i_kind) num_bad_ikx
 
@@ -1906,7 +1910,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            call nc_diag_data2d("northward_wind", sngl(vges))
            call nc_diag_data2d("air_temperature", sngl(tsentmp))
            call nc_diag_data2d("specific_humidity", sngl(qges))
-           call nc_diag_metadata("surface_temperature",sngl(skint))
+           call nc_diag_metadata("skin_temperature",sngl(skint))
            call nc_diag_metadata("surface_roughness", sngl(sfcr/r100))
            call nc_diag_metadata("landmask",sngl(msges))
            call nc_diag_metadata("Bias_Correction_Terms", sngl(bmiss))
