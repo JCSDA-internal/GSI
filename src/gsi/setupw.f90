@@ -1888,7 +1888,6 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            endif
 
            if (twodvar_regional) then
-              call nc_diag_metadata("Dominant_Sfc_Type", data(idomsfc,i)              )
               call nc_diag_metadata("Model_Terrain",     data(izz,i)                  )
               r_prvstg            = data(iprvd,i)
               call nc_diag_metadata("Provider_Name",     c_prvstg                     )
@@ -1907,6 +1906,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            ! For consistency with all other variable files (t, q, ps, etc.) save
            ! a bunch of additional variables.
 
+           call nc_diag_metadata("Dominant_Sfc_Type", data(idomsfc,i)              )
            call nc_diag_metadata("surface_pressure",sngl(psges*r1000))
            call nc_diag_metadata("surface_geopotential_height",sngl(zsges))
            call nc_diag_data2d("geopotential_height", sngl(zges+zsges))
@@ -1919,9 +1919,6 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            call nc_diag_data2d("specific_humidity", sngl(qges))
            call nc_diag_metadata("skin_temperature",sngl(skint))
            call nc_diag_metadata("surface_roughness", sngl(sfcr/r100))
-           call nc_diag_metadata("landmask",sngl(msges))
-           call nc_diag_metadata("Bias_Correction_Terms", sngl(bmiss))
-           call nc_diag_metadata("Data_Pof", sngl(bmiss))
 
 
   end subroutine contents_netcdf_diag_
