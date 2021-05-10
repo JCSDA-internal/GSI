@@ -186,7 +186,7 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
   real(r_kind) sinazm,cosazm,sintilt,costilt,cosazm_costilt,sinazm_costilt
   real(r_kind) ratio_errors,qcgross
   real(r_kind) ugesin,vgesin,wgesin,factw,skint,sfcr
-  real(r_kind) rwwind,presw
+  real(r_kind) rwwind,presw,rwwind_adjust,rwwind_unadjust
   real(r_kind) errinv_input,errinv_adjst,errinv_final
   real(r_kind) err_input,err_adjst,err_final
   real(r_kind),dimension(nele,nobs):: data
@@ -600,7 +600,8 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
      cosazm_costilt = cosazm*costilt
      sinazm_costilt = sinazm*costilt
      !vTgesprofile= 5.40_r_kind*(exp((refgesprofile -43.1_r_kind)/17.5_r_kind)) 
-!    rwwind = (ugesin*cosazm+vgesin*sinazm)*costilt*factw
+     rwwind_adjust = (ugesin*cosazm+vgesin*sinazm)*costilt*factw
+     rwwind_unadjust = (ugesin*cosazm+vgesin*sinazm)*costilt
      umaxmax=-huge(umaxmax)
      uminmin=huge(uminmin)
      kminmin=kbeambot
@@ -1112,7 +1113,7 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
 
         rdiagbuf(17,ii) = data(irwob,i)      ! radial wind speed observation (m/s)
         rdiagbuf(18,ii) = ddiff              ! obs-ges used in analysis (m/s)
-        rdiagbuf(19,ii) = data(irwob,i)-rwwind  ! obs-ges w/o bias correction (m/s) (future slot)
+        rdiagbuf(19,ii) = data(irwob,i)-rwwind_unadjust  ! obs-ges w/o bias correction (m/s) (future slot)
 
 
         rdiagbuf(20,ii)=data(iazm,i)*rad2deg ! azimuth angle
@@ -1165,6 +1166,7 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
            call nc_diag_metadata("Station_Elevation",       sngl(data(ielev,i))    )
            call nc_diag_metadata("Pressure",                sngl(presw)            )
            call nc_diag_metadata("Height",                  sngl(data(ihgt,i))     )
+           call nc_diag_metadata("Geometric_Height",                sngl(zob)      )
            call nc_diag_metadata("Time",                    sngl(dtime-time_offset))
            call nc_diag_metadata("Prep_QC_Mark",            sngl(zero)             )
            call nc_diag_metadata("Prep_Use_Flag",           sngl(data(iuse,i))     )
@@ -1179,11 +1181,19 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
            call nc_diag_metadata("Errinv_Input",            sngl(errinv_input)     )
            call nc_diag_metadata("Errinv_Adjust",           sngl(errinv_adjst)     )
            call nc_diag_metadata("Errinv_Final",            sngl(errinv_final)     )
+           call nc_diag_metadata("Forecast_unadjusted",       sngl(rwwind_unadjust)          )
+           call nc_diag_metadata("Forecast_adjusted",       sngl(rwwind_adjust)          )
 
            call nc_diag_metadata("Observation",                   sngl(data(irwob,i))  )
            call nc_diag_metadata("Obs_Minus_Forecast_adjusted",   sngl(ddiff)          )
-           call nc_diag_metadata("Obs_Minus_Forecast_unadjusted", sngl(data(irwob,i)-rwwind) )
+           call nc_diag_metadata("Obs_Minus_Forecast_unadjusted", sngl(data(irwob,i)-rwwind_unadjust) )
  
+           call nc_diag_metadata("cosazm_costilt", sngl(cosazm_costilt) )
+           call nc_diag_metadata("sinazm_costilt", sngl(sinazm_costilt) )
+           call nc_diag_metadata("sintilt", sngl(sintilt) )
+           call nc_diag_metadata("err2", sngl(error**2) )
+           call nc_diag_metadata("radar_tilt",sngl(data(itilt,i)*rad2deg))
+           call nc_diag_metadata("radar_azim",sngl(data(iazm,i)*rad2deg))
            if (lobsdiagsave) then
               do jj=1,miter
                  if (odiag%muse(jj)) then
@@ -1203,6 +1213,11 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
               call nc_diag_data2d("Observation_Operator_Jacobian_endind", dhx_dx%end_ind)
               call nc_diag_data2d("Observation_Operator_Jacobian_val", real(dhx_dx%val,r_single))
            endif
+              call nc_diag_data2d("eastward_wind", ugesprofile)
+              call nc_diag_data2d("northward_wind", vgesprofile)
+              call nc_diag_data2d("upward_wind", vgesprofile*0.0)
+              call nc_diag_data2d("fv3_geometric_height", zges)
+              call nc_diag_data2d("geopotential_height", hges)
    
   end subroutine contents_netcdf_diag_
 
