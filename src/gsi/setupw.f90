@@ -563,6 +563,8 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
           nsig,mype,nfldsig)
      call tintrp2a1(ges_v,vges,dlat,dlon,dtime,hrdifsig,&
           nsig,mype,nfldsig)
+     call tintrp2a1(ges_tv,tges,dlat,dlon,dtime,hrdifsig,&
+          nsig,mype,nfldsig)
 
 !    Type 221=pibal winds contain a mixture of wind observations reported
 !    by pressure and others by height.  Those levels only reported by 
