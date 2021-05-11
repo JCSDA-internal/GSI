@@ -216,7 +216,7 @@ subroutine setupq(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   real(r_kind) ratio_errors,dlat,dlon,dtime,dpres,rmaxerr,error
   real(r_kind) rsig,dprpx,rlow,rhgh,presq,tfact,ramp
   real(r_kind) psges,sfcchk,ddiff,errorx
-  real(r_kind) zsges, q2mtmp
+  real(r_kind) zsges
   real(r_kind) cg_t,cvar,wgt,rat_err2,qcgross
   real(r_kind) grsmlt,ratio,val2,obserror
   real(r_kind) obserrlm,residual,ressw2,scale,ress,huge_error,var_jb
@@ -614,9 +614,6 @@ subroutine setupq(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
         else
            call tintrp2a11(ges_q2m,q2mges,dlat,dlon,dtime,hrdifsig,mype,nfldsig)
         endif
-
-!HS Question: should we output modified q2mges or qges instead as follows?
-        q2mtmp = q2mges
 
         if(i_use_2mq4b==1)then
            qges=0.33_r_single*qges+0.67_r_single*q2mges
@@ -1344,7 +1341,6 @@ subroutine setupq(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            ! geovals for JEDI UFO
            call nc_diag_metadata("surface_geopotential_height", sngl(zsges))
            call nc_diag_metadata("surface_pressure", sngl(psges*r1000))
-           call nc_diag_metadata("specific_humidity_2m", sngl(q2mtmp))
            call nc_diag_data2d("geopotential_height", sngl(zsges+zges))
            call nc_diag_data2d("atmosphere_pressure_coordinate", sngl(prsltmp2*r1000))
            call nc_diag_data2d("atmosphere_pressure_coordinate_interface", sngl(prsitmp*r1000))
