@@ -812,7 +812,7 @@ subroutine contents_netcdf_diag_
            call nc_diag_metadata("Nonlinear_QC_Rel_Wgt@MetaData",         sngl(gps_allptr%rdiag(13)) )
 
 !          geovals
-           call nc_diag_metadata("surface_altitude",          sngl(gps_allptr%rdiag(9)) )
+           call nc_diag_metadata("surface_geopotential_height",sngl(gps_allptr%rdiag(9)) )
            call nc_diag_data2d("air_temperature",             sngl(gps_allptr%tsenges) )
            call nc_diag_data2d("virtual_temperature",         sngl(gps_allptr%tvirges) )
            call nc_diag_data2d("specific_humidity",           sngl(gps_allptr%sphmges) )
