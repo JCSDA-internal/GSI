@@ -142,6 +142,7 @@ subroutine setupbend(obsLL,odiagLL, &
 
   use gsi_4dvar, only: nobs_bins,hr_obsbin
   use guess_grids, only: ges_lnprsi,hrdifsig,geop_hgti,nfldsig
+  use guess_grids, only: ges_tsen,geop_hgtl,ges_lnprsl
   use guess_grids, only: nsig_ext,gpstop
   use gridmod, only: nsig
   use gridmod, only: get_ij,latlon11
@@ -259,6 +260,8 @@ subroutine setupbend(obsLL,odiagLL, &
   real(r_kind),allocatable,dimension(:,:,:,:) :: ges_tv
   real(r_kind),allocatable,dimension(:,:,:,:) :: ges_q 
   integer,     dimension(nobs)                :: qcfail_8km
+  real(r_kind),dimension(nsig,  nobs)         :: Tsen,Tvir,sphm,hgtl,prslnl
+  real(r_kind),dimension(nsig+1,nobs)         :: hgti,prslni
 
   type(obsLList),pointer,dimension(:):: gpshead
   gpshead => obsLL(:)
@@ -452,6 +455,21 @@ subroutine setupbend(obsLL,odiagLL, &
           mype,nfldsig)
 
      prsltmp_o(1:nsig,i)=prsltmp(1:nsig) ! needed in minimization
+
+ !    Interpolate mid-level log(pres),mid-level geopotential height,
+ !    and air temperature for JEDI
+      call tintrp2a1(ges_tsen,  Tsen(1:nsig,i),  dlat,dlon,dtime,hrdifsig, &
+                     nsig, mype,nfldsig)
+      call tintrp2a1(geop_hgtl, hgtl(1:nsig,i),  dlat,dlon,dtime,hrdifsig, &
+                     nsig, mype,nfldsig)
+      call tintrp2a1(ges_lnprsl,prslnl(1:nsig,i),dlat,dlon,dtime,hrdifsig, &
+                     nsig, mype,nfldsig)
+
+      Tvir(1:nsig,i)      = tges(1:nsig)            ! virtual temperature
+      sphm(1:nsig,i)      = qges(1:nsig)            ! specific humidity
+      hgtl(1:nsig,i)      = hgtl(1:nsig,i) + zsges  ! mid level geopotential height
+      hgti(1:nsig+1,i)    = hges(1:nsig+1) + zsges  ! interface level geopotential height
+      prslni(1:nsig+1,i)  = prsltmp(1:nsig+1)       ! interface level log(pressure)
 
 ! Compute refractivity index-radius product at interface
 !
@@ -1020,6 +1038,28 @@ subroutine setupbend(obsLL,odiagLL, &
         gps_alltail(ibin)%head%iob=ioid(i)
         gps_alltail(ibin)%head%elat= data(ilate,i)
         gps_alltail(ibin)%head%elon= data(ilone,i)
+
+!       2 dimensional geovals for JEDI
+        allocate(gps_alltail(ibin)%head%tvirges(nsig),stat=istatus)
+        allocate(gps_alltail(ibin)%head%tsenges(nsig),stat=istatus)
+        allocate(gps_alltail(ibin)%head%sphmges(nsig),stat=istatus)
+        allocate(gps_alltail(ibin)%head%hgtlges(nsig),stat=istatus)
+        allocate(gps_alltail(ibin)%head%hgtiges(nsig+1),stat=istatus)
+        allocate(gps_alltail(ibin)%head%prsiges(nsig+1),stat=istatus)
+        allocate(gps_alltail(ibin)%head%prslges(nsig),stat=istatus)
+
+        do j= 1, nsig
+          gps_alltail(ibin)%head%tvirges(j)  = Tvir(j,i)
+          gps_alltail(ibin)%head%tsenges(j)  = Tsen(j,i)
+          gps_alltail(ibin)%head%sphmges(j)  = sphm(j,i)
+          gps_alltail(ibin)%head%hgtlges(j)  = hgtl(j,i)
+          gps_alltail(ibin)%head%prslges(j)  = 1000.0*exp(prslnl(j,i))
+        end do
+
+        do j= 1, nsig + 1
+          gps_alltail(ibin)%head%hgtiges(j)  = hgti(j,i)
+          gps_alltail(ibin)%head%prsiges(j)  = 1000.0*exp(prslni(j,i))
+        end do
 
         allocate(gps_alltail(ibin)%head%rdiag(nreal),stat=istatus)
         if (istatus/=0) write(6,*)'SETUPBEND:  allocate error for gps_alldiag, istatus=',istatus
