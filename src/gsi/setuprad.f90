@@ -2579,6 +2579,8 @@ contains
                  call nc_diag_metadata("Observation",                           sngl(tb_obs0(ich_diag(i))) )    ! observed brightness temperature (K)
                  call nc_diag_metadata("Obs_Minus_Forecast_unadjusted",         sngl(tbcnob(ich_diag(i)))  )    ! observed - simulated Tb with no bias correction (K)
                  call nc_diag_metadata("Obs_Minus_Forecast_adjusted",           sngl(tbc0(ich_diag(i)  ))  )    ! observed - simulated Tb with bias corrrection (K)
+                 call nc_diag_metadata("Forecast_unadjusted", sngl(tb_obs(ich_diag(i))-tbcnob(ich_diag(i)))) ! simulated Tb with no bias correction
+                 call nc_diag_metadata("Forecast_adjusted",   sngl(tb_obs(ich_diag(i))-tbc(ich_diag(i))))    ! simulated Tb with bias correction
                  errinv = sqrt(varinv0(ich_diag(i)))
                  call nc_diag_metadata("Inverse_Observation_Error",             sngl(errinv)          )
                  call nc_diag_metadata("Input_Observation_Error",          sngl(error0(ich_diag(i)))  )         ! observed brightness temperature (K)

@@ -359,7 +359,6 @@ subroutine init_crtm(init_pass,mype_diaghdr,mype,nchanl,nreal,isis,obstype,radmo
 ! ...all "additional absorber" variables
   integer(i_kind) :: j,icount
   integer(i_kind) :: ig
-  integer(i_kind) :: n_absorbers
   logical quiet
   logical print_verbose
 
