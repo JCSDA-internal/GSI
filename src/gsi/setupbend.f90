@@ -104,7 +104,8 @@ subroutine setupbend(obsLL,odiagLL, &
 !   2020-08-26  Shao/Bathmann - add Jacobian QC
 !   2021-03-26  H.Zhang - add model states at obs locations, and observation  metadata that are needed in JEDI;
 !                         add QC flags 4 and 5 to specify different QC checks
-!
+!   2021-0519  !H.Zhang - use originating center to specify obs error
+
 !   input argument list:
 !     lunin    - unit from which to read observations
 !     mype     - mpi task id
@@ -662,7 +663,8 @@ subroutine setupbend(obsLL,odiagLL, &
               (data(isatid,i)==42) .or.(data(isatid,i)==3)  .or. &
               (data(isatid,i)==821).or.(data(isatid,i)==421).or. &
               (data(isatid,i)==440).or.(data(isatid,i)==43) .or. &
-              (data(isatid,i)==5)) then
+              (data(isatid,i)==5)  .or.                          &
+               data(iogce,i) /=60 )  then !H. ZHANG 20200519
                     
               if((data(ilate,i)> r40).or.(data(ilate,i)< -r40)) then
                  if(alt>r12) then
