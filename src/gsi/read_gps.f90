@@ -270,7 +270,7 @@ subroutine read_gps(nread,ndata,nodata,infile,lunout,obstype,twind, &
 ! Check profile quality flags
         if ( ((said > 739).and.(said < 746)).or.(said == 820).or.(said == 786).or. &
              ((said > 749).and.(said < 756)).or.(said == 825).or.(said == 44) .or. &
-              (said >= 265 .and. said <= 269).or. & 
+              (said >= 265 .and. said <= 269)     & 
                .or. ogce == 60                    &  !CDAAC processing
                .or. ogce == 173   ) then             !GFZ processing
            if(pcc==zero) then
