@@ -150,7 +150,8 @@ subroutine setupq(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   use gsi_4dvar, only: nobs_bins,hr_obsbin,min_offset
   use oneobmod, only: oneobtest,maginnov,magoberr
   use guess_grids, only: ges_lnprsl,hrdifsig,nfldsig,ges_tsen,ges_prsl,pbl_height
-  use guess_grids, only: geop_hgtl, ges_prsi, sfct
+  use guess_grids, only: geop_hgtl, ges_prsi
+  use satthin, only: sst_full 
   use gridmod, only: lat2,lon2,nsig,get_ijk,twodvar_regional
   use constants, only: zero,one,r1000,r10,r100
   use constants, only: huge_single,wgtlim,three
@@ -497,7 +498,7 @@ subroutine setupq(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
     call tintrp2a1(ges_u,utmp,dlat,dlon,dtime,hrdifsig,nsig,mype,nfldsig)
     call tintrp2a1(ges_v,vtmp,dlat,dlon,dtime,hrdifsig,nsig,mype,nfldsig)
     ! surface temperature
-    call tintrp2a11(sfct,sfctges,dlat,dlon,dtime,hrdifsig,mype,nfldsig)
+    call tintrp2a11(sst_full,sfctges,dlat,dlon,dtime,hrdifsig,mype,nfldsig)
 
      presq=r10*exp(dpres)
      itype=ictype(ikx)
