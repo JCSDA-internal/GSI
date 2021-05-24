@@ -150,7 +150,7 @@ subroutine setupq(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   use gsi_4dvar, only: nobs_bins,hr_obsbin,min_offset
   use oneobmod, only: oneobtest,maginnov,magoberr
   use guess_grids, only: ges_lnprsl,hrdifsig,nfldsig,ges_tsen,ges_prsl,pbl_height
-  use guess_grids, only: geop_hgtl, ges_prsi
+  use guess_grids, only: geop_hgtl, ges_prsi, sfct
   use gridmod, only: lat2,lon2,nsig,get_ijk,twodvar_regional
   use constants, only: zero,one,r1000,r10,r100
   use constants, only: huge_single,wgtlim,three
@@ -216,7 +216,7 @@ subroutine setupq(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   real(r_kind) ratio_errors,dlat,dlon,dtime,dpres,rmaxerr,error
   real(r_kind) rsig,dprpx,rlow,rhgh,presq,tfact,ramp
   real(r_kind) psges,sfcchk,ddiff,errorx
-  real(r_kind) zsges
+  real(r_kind) zsges, sfctges
   real(r_kind) cg_t,cvar,wgt,rat_err2,qcgross
   real(r_kind) grsmlt,ratio,val2,obserror
   real(r_kind) obserrlm,residual,ressw2,scale,ress,huge_error,var_jb
@@ -496,6 +496,8 @@ subroutine setupq(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
     ! winds
     call tintrp2a1(ges_u,utmp,dlat,dlon,dtime,hrdifsig,nsig,mype,nfldsig)
     call tintrp2a1(ges_v,vtmp,dlat,dlon,dtime,hrdifsig,nsig,mype,nfldsig)
+    ! surface temperature
+    call tintrp2a11(sfct,sfctges,dlat,dlon,dtime,hrdifsig,mype,nfldsig)
 
      presq=r10*exp(dpres)
      itype=ictype(ikx)
@@ -1341,6 +1343,7 @@ subroutine setupq(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            ! geovals for JEDI UFO
            call nc_diag_metadata("surface_geopotential_height", sngl(zsges))
            call nc_diag_metadata("surface_pressure", sngl(psges*r1000))
+           call nc_diag_data2d("surface_temperature", sngl(sfctges))
            call nc_diag_data2d("geopotential_height", sngl(zsges+zges))
            call nc_diag_data2d("atmosphere_pressure_coordinate", sngl(prsltmp2*r1000))
            call nc_diag_data2d("atmosphere_pressure_coordinate_interface", sngl(prsitmp*r1000))

@@ -128,7 +128,7 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
   use jfunc, only: jiter,last,jiterstart,miter
   use qcmod, only: dfact,dfact1,npres_print,vqc,nvqc
   use guess_grids, only: hrdifsig,ges_lnprsl,nfldsig,ntguessig
-  use guess_grids, only: geop_hgtl, ges_prsi, ges_tsen
+  use guess_grids, only: geop_hgtl, ges_prsi, ges_tsen, sfct
   use convinfo, only: nconvtype,cermin,cermax,cgross,cvar_b,cvar_pg,ictype,icsubtype
   use convinfo, only: ibeta,ikapa 
 
@@ -176,7 +176,7 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
   real(r_kind),dimension(nobs):: dup
   real(r_kind),dimension(nsig):: prsltmp
   real(r_kind),dimension(nsig):: zges, prsltmp2, tvgestmp, tsentmp, qtmp, utmp, vtmp
-  real(r_kind) :: tgges,roges
+  real(r_kind) :: tgges,roges, sfctges
   real(r_kind),dimension(nsig+1):: prsitmp
   real(r_kind),dimension(nele,nobs):: data
   real(r_single),allocatable,dimension(:,:)::rdiagbuf
@@ -406,6 +406,8 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
     ! winds
     call tintrp2a1(ges_u,utmp,dlat,dlon,dtime,hrdifsig,nsig,mype,nfldsig)
     call tintrp2a1(ges_v,vtmp,dlat,dlon,dtime,hrdifsig,nsig,mype,nfldsig)
+    ! surface temperature
+    call tintrp2a11(sfct,sfctges,dlat,dlon,dtime,hrdifsig,mype,nfldsig)
     ! landmask
     msges = 0
     if(itype == 180 .or. itype == 182 .or. itype == 183 .or. itype == 199) then    !sea
@@ -1022,6 +1024,7 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
            call nc_diag_data2d("specific_humidity", sngl(qtmp))
            call nc_diag_data2d("northward_wind", sngl(utmp))
            call nc_diag_data2d("eastward_wind", sngl(vtmp))
+           call nc_diag_data2d("surface_temperature", sngl(sfctges))
 
 
   end subroutine contents_netcdf_diag_
