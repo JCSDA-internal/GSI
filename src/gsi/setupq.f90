@@ -151,7 +151,6 @@ subroutine setupq(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   use oneobmod, only: oneobtest,maginnov,magoberr
   use guess_grids, only: ges_lnprsl,hrdifsig,nfldsig,ges_tsen,ges_prsl,pbl_height
   use guess_grids, only: geop_hgtl, ges_prsi
-  use satthin, only: sst_full 
   use gridmod, only: lat2,lon2,nsig,get_ijk,twodvar_regional
   use constants, only: zero,one,r1000,r10,r100
   use constants, only: huge_single,wgtlim,three
@@ -217,7 +216,8 @@ subroutine setupq(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   real(r_kind) ratio_errors,dlat,dlon,dtime,dpres,rmaxerr,error
   real(r_kind) rsig,dprpx,rlow,rhgh,presq,tfact,ramp
   real(r_kind) psges,sfcchk,ddiff,errorx
-  real(r_kind) zsges, sfctges
+  real(r_kind) zsges
+  real(r_kind) sfctges
   real(r_kind) cg_t,cvar,wgt,rat_err2,qcgross
   real(r_kind) grsmlt,ratio,val2,obserror
   real(r_kind) obserrlm,residual,ressw2,scale,ress,huge_error,var_jb
@@ -498,7 +498,8 @@ subroutine setupq(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
     call tintrp2a1(ges_u,utmp,dlat,dlon,dtime,hrdifsig,nsig,mype,nfldsig)
     call tintrp2a1(ges_v,vtmp,dlat,dlon,dtime,hrdifsig,nsig,mype,nfldsig)
     ! surface temperature
-    call tintrp2a11(sst_full,sfctges,dlat,dlon,dtime,hrdifsig,mype,nfldsig)
+    call tintrp31(ges_tv,sfctges,dlat,dlon,log(psges),dtime, &
+         hrdifsig,mype,nfldsig)
 
      presq=r10*exp(dpres)
      itype=ictype(ikx)

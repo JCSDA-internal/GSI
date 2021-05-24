@@ -54,7 +54,6 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   use guess_grids, only: nfldsig,hrdifsig,geop_hgtl,sfcmod_gfs
   use guess_grids, only: tropprs,sfcmod_mm5
   use guess_grids, only: ges_lnprsl,ges_prsi,ges_tsen,comp_fact10,pbl_height
-  use satthin, only: sst_full
   use constants, only: zero,half,one,tiny_r_kind,two, &
            three,rd,grav,four,five,huge_single,r1000,wgtlim,r10,r400,r100
   use constants, only: grav_ratio,flattening,deg2rad, &
@@ -265,7 +264,8 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   real(r_kind) err_input,err_adjst,err_final,skint,sfcr
   real(r_kind) dudiff_opp, dvdiff_opp, vecdiff, vecdiff_opp
   real(r_kind) dudiff_opp_rs, dvdiff_opp_rs, vecdiff_rs, vecdiff_opp_rs
-  real(r_kind) oscat_vec,ascat_vec,rapidscat_vec, sfctges
+  real(r_kind) oscat_vec,ascat_vec,rapidscat_vec
+  real(r_kind) :: sfctges
   real(r_kind),dimension(nele,nobs):: data
   real(r_kind),dimension(nobs):: dup
   real(r_kind),dimension(nsig+1)::prsitmp
@@ -566,7 +566,9 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
           nsig,mype,nfldsig)
      call tintrp2a1(ges_tv,tges,dlat,dlon,dtime,hrdifsig,&
           nsig,mype,nfldsig)
-     call tintrp2a11(sst_full,sfctges,dlat,dlon,dtime,hrdifsig,mype,nfldsig)
+! temperature at surface
+     call tintrp31(ges_tv,sfctges,dlat,dlon,log(psges),dtime, &
+          hrdifsig,mype,nfldsig)
 
 !    Type 221=pibal winds contain a mixture of wind observations reported
 !    by pressure and others by height.  Those levels only reported by 

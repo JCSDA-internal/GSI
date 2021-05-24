@@ -57,7 +57,6 @@ subroutine setupt(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
 
   use guess_grids, only: nfldsig, hrdifsig,ges_lnprsl,&
        geop_hgtl,ges_prsi,ges_tsen,pbl_height
-  use satthin, only: sst_full 
   use state_vectors, only: svars3d, levels
 
   use constants, only: zero, one, four,t0c,rd_over_cp,three,rd_over_cp_mass,ten
@@ -272,7 +271,8 @@ subroutine setupt(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   real(r_kind) tgges,roges
   real(r_kind),dimension(nsig):: tvtmp,qtmp,utmp,vtmp,hsges
   real(r_kind),dimension(nsig):: tvgestmp,tsentmp,qgestmp,zges,ugestmp,vgestmp
-  real(r_kind) u10ges,v10ges,t2ges,q2ges,psges2,f10ges, sfctges
+  real(r_kind) u10ges,v10ges,t2ges,q2ges,psges2,f10ges
+  real(r_kind) :: sfctges 
   real(r_kind),dimension(34) :: ptablt
   real(r_single),allocatable,dimension(:,:)::rdiagbuf
   real(r_single),allocatable,dimension(:,:)::rdiagbufp
@@ -640,8 +640,9 @@ subroutine setupt(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
 ! sensible temperature profile
      call tintrp2a1(ges_tsen,tsentmp,dlat,dlon,dtime,hrdifsig,&
           nsig,mype,nfldsig)
-     call tintrp2a11(sst_full,sfctges,dlat,dlon,dtime,hrdifsig,&
-          mype,nfldsig)
+! temperature at surface
+     call tintrp31(ges_tv,sfctges,dlat,dlon,log(psges),dtime, &
+          hrdifsig,mype,nfldsig)
 ! specific humidity profile at obs location/times
      call tintrp2a1(ges_q,qgestmp,dlat,dlon,dtime,hrdifsig,&
           nsig,mype,nfldsig)
