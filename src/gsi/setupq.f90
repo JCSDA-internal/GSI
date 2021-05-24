@@ -1343,7 +1343,7 @@ subroutine setupq(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            ! geovals for JEDI UFO
            call nc_diag_metadata("surface_geopotential_height", sngl(zsges))
            call nc_diag_metadata("surface_pressure", sngl(psges*r1000))
-           call nc_diag_data2d("surface_temperature", sngl(sfctges))
+           call nc_diag_metadata("surface_temperature", sngl(sfctges))
            call nc_diag_data2d("geopotential_height", sngl(zsges+zges))
            call nc_diag_data2d("atmosphere_pressure_coordinate", sngl(prsltmp2*r1000))
            call nc_diag_data2d("atmosphere_pressure_coordinate_interface", sngl(prsitmp*r1000))

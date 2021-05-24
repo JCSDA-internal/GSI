@@ -1024,7 +1024,7 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
            call nc_diag_data2d("specific_humidity", sngl(qtmp))
            call nc_diag_data2d("northward_wind", sngl(utmp))
            call nc_diag_data2d("eastward_wind", sngl(vtmp))
-           call nc_diag_data2d("surface_temperature", sngl(sfctges))
+           call nc_diag_metadata("surface_temperature", sngl(sfctges))
 
 
   end subroutine contents_netcdf_diag_
