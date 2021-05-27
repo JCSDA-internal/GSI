@@ -48,7 +48,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   use gsi_4dvar, only: nobs_bins,hr_obsbin,min_offset
   use qcmod, only: npres_print,ptop,pbot,dfact,dfact1,qc_satwnds,njqc,vqc
   use qcmod, only: nvqc
-  use oneobmod, only: oneobtest,oneob_type,magoberr,maginnov 
+  use oneobmod, only: oneobtest,oneob_type,magoberr,maginnov
   use gridmod, only: get_ijk,nsig,twodvar_regional,regional,wrf_nmm_regional,&
       rotate_wind_xy2ll,pt_ll,fv3_regional
   use guess_grids, only: nfldsig,hrdifsig,geop_hgtl,sfcmod_gfs
@@ -79,11 +79,11 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   ! observations collected within hurricanes/tropical cyclones; these
   ! apply only to the regional forecast models (e.g., HWRF); Henry
   ! R. Winterbottom (henry.winterbottom@noaa.gov).
-  
+
   use obsmod, only: uv_doe_a_236,uv_doe_a_237,uv_doe_b_236,uv_doe_b_237
 
   implicit none
-  
+
   type(obsLList ),target,dimension(:),intent(in):: obsLL
   type(obs_diags),target,dimension(:),intent(in):: odiagLL
 
@@ -95,7 +95,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
    integer(i_kind)                                  ,intent(in   ) :: nobs  ! number of observations
    integer(i_kind)                                  ,intent(in   ) :: is    ! ndat index
    logical                                          ,intent(in   ) :: conv_diagsave ! logical to save innovation dignostics
-   
+
 ! !INPUT/OUTPUT PARAMETERS:
 
    real(r_kind),dimension(npres_print,nconvtype,5,3),intent(inout) :: bwork ! obs-ges stats
@@ -154,7 +154,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
 !   2007-03-19  tremolet - binning of observations
 !   2007-03-27  li.bi - add qc for type 289 windsat winds
 !   2007-06-05  tremolet - add observation diagnostics structure
-!   2007-08-28  su     - modify observation gross check error 
+!   2007-08-28  su     - modify observation gross check error
 !   2008-03-24  wu     - oberror tuning and perturb obs
 !   2008-03-31  li.bi - add qc for type 290 ascat winds
 !   2008-05-20  safford - rm unused vars
@@ -164,14 +164,14 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
 !   2009-02-06  pondeca - for each observation site, add the following to the
 !                         diagnostic file: local terrain height, dominate surface
 !                         type, station provider name, and station subprovider name
-!   2010-11-25  su      - data items to hold quality mark for satellite wind 
+!   2010-11-25  su      - data items to hold quality mark for satellite wind
 !   2011-03-08  parrish - for regional=.true., convert wind components in rdiagbuf from grid relative
 !                           to earth relative, using subroutine rotate_wind_xy2ll.
-!   2011-05-05  su      - ome quality control for satellite satellite winds 
-!   2012-01-10  hu      - add additional quality control for PBL profiler 223, 224, 227 
+!   2011-05-05  su      - ome quality control for satellite satellite winds
+!   2012-01-10  hu      - add additional quality control for PBL profiler 223, 224, 227
 !   2011-12-14  wu      - add code for rawinsonde level enhancement ( ext_sonde )
 !   2012-07-19  todling - add qc_satwnds flag to allow bypass QC-satwinds (QC not good for GMAO)
-!   2011-10-14  Hu      - add code for producing pseudo-obs in PBL 
+!   2011-10-14  Hu      - add code for producing pseudo-obs in PBL
 !                               layer based on surface obs UV
 !   2013-01-08  Su      -add more quality control for satellite winds and profiler winds
 !   2013-01-26  parrish - change grdcrd to grdcrd1, intrp2a to intrp2a11, tintrp2a to tintrp2a1, tintrp2a11,
@@ -185,7 +185,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
 !   2014-01-28  todling - write sensitivity slot indicator (ioff) to header of diagfile
 !   2014-04-12       su - add non linear qc from Purser's scheme
 !   2014-12-30  derber  - Modify for possibility of not using obsdiag
-!   2015-05-01  Liu Ling - Added ISS Rapidscat wind (u,v) qc 
+!   2015-05-01  Liu Ling - Added ISS Rapidscat wind (u,v) qc
 !   2015-03-14  Nebuda  - add departure check and near surface check for clear air WV AMV (WVCS) from GOES type 247
 !   2015-10-01  guo     - full res obvsr: index to allow redistribution of obsdiags
 !   2015-12-21  yang    - Parrish's correction to the previous code in new varqc.
@@ -201,7 +201,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
 !                       . Remove my_node with corrected typecast().
 !   2018-04-09  pondeca -  introduce duplogic to correctly handle the characterization of
 !                          duplicate obs in twodvar_regional applications
-!   2019-06-07  levine/pondeca - for twodvar_regional applications, switch from processing surface obs 
+!   2019-06-07  levine/pondeca - for twodvar_regional applications, switch from processing surface obs
 !                                with reported pressure to surface obs with reported geometric height.
 !                                This is mainly to account for mesonets with sensor height < 10 m.
 !   2019-07-12  levine  -  introduce logic to read in mesonet wind sensor heights from prepbufr
@@ -265,11 +265,11 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   real(r_kind) dudiff_opp, dvdiff_opp, vecdiff, vecdiff_opp
   real(r_kind) dudiff_opp_rs, dvdiff_opp_rs, vecdiff_rs, vecdiff_opp_rs
   real(r_kind) oscat_vec,ascat_vec,rapidscat_vec
-  real(r_kind) :: sfctges
+  real(r_kind) sfctges
   real(r_kind),dimension(nele,nobs):: data
   real(r_kind),dimension(nobs):: dup
   real(r_kind),dimension(nsig+1)::prsitmp
-  real(r_kind),dimension(nsig)::prsltmp,tges,zges,qges
+  real(r_kind),dimension(nsig)::prsltmp,tges,zges,qges,zges2
   real(r_kind),dimension(nsig)::tsentmp,zges_read,uges,vges,prsltmp2
   real(r_kind) wdirob,wdirgesin,wdirdiffmax
   real(r_kind),dimension(34)::ptabluv
@@ -554,6 +554,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
           mype,nfldsig)
      call tintrp2a1(ges_lnprsl,prsltmp,dlat,dlon,dtime,hrdifsig,&
           nsig,mype,nfldsig)
+     prsltmp2 = exp(prsltmp) ! pressure on model layers (in cb)
      call tintrp2a1(ges_prsi,prsitmp,dlat,dlon,dtime,hrdifsig,&
           nsig+1,mype,nfldsig)
      call tintrp2a1(ges_tsen,tsentmp,dlat,dlon,dtime,hrdifsig,&
@@ -566,14 +567,13 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
           nsig,mype,nfldsig)
      call tintrp2a1(ges_tv,tges,dlat,dlon,dtime,hrdifsig,&
           nsig,mype,nfldsig)
-! temperature at surface
      call tintrp31(ges_tv,sfctges,dlat,dlon,log(psges),dtime, &
           hrdifsig,mype,nfldsig)
 
 !    Type 221=pibal winds contain a mixture of wind observations reported
-!    by pressure and others by height.  Those levels only reported by 
-!    pressure have a missing value (ie, large) value for the reported 
-!    height.  The logic below determines whether to process type 221 
+!    by pressure and others by height.  Those levels only reported by
+!    pressure have a missing value (ie, large) value for the reported
+!    height.  The logic below determines whether to process type 221
 !    wind observations using height or pressure as the vertical coordinate.
 !    If height is not bad (less than r0_1_bmiss), we use height in the
 !    forward model.  Otherwise, use reported pressure.
@@ -584,9 +584,9 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
 
 
 !    Process observations reported with height differently than those
-!    reported with pressure.  Type 223=profiler and 224=vadwnd are 
-!    encoded in NCEP prepbufr files with geometric height above 
-!    sea level.  Type 229=pibal profiler is reported using 
+!    reported with pressure.  Type 223=profiler and 224=vadwnd are
+!    encoded in NCEP prepbufr files with geometric height above
+!    sea level.  Type 229=pibal profiler is reported using
 !    geopotenital height.  Some type 221=pibal wind observations are
 !    also repoted using geopotential height.
 
@@ -618,18 +618,22 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
         dpres=dpres-(dstn+fact*(zsges-dstn))
         if(itype==261) dpres = data(ihgt,i)
 
-!       Get guess surface elevation and geopotential height profile 
+!       Get guess surface elevation and geopotential height profile
 !       at observation location.
         call tintrp2a1(geop_hgtl,zges,dlat,dlon,dtime,hrdifsig,&
              nsig,mype,nfldsig)
+
+!       Keep the original geopotential height field in zges2 because we need to
+!       write out full column.
+        zges2 = zges
 
 !       For observation reported with geometric height above sea level,
 !       convert geopotential to geometric height.
 
         if (((itype>=223 .and. itype<=228) .or. sfc_data) .and. .not.twodvar_regional) then
-!          Convert geopotential height at layer midpoints to geometric 
-!          height using equations (17, 20, 23) in MJ Mahoney's note 
-!          "A discussion of various measures of altitude" (2001).  
+!          Convert geopotential height at layer midpoints to geometric
+!          height using equations (17, 20, 23) in MJ Mahoney's note
+!          "A discussion of various measures of altitude" (2001).
 !          Available on the web at
 !          http://mtp.jpl.nasa.gov/notes/altitude/altitude.html
 !
@@ -669,7 +673,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
         call grdcrd1(dpres,zges,nsig,1)
 
 !       Interpolate guess u and v to observation location and time.
- 
+
         call tintrp31(ges_u,ugesin,dlat,dlon,dpres,dtime, &
            hrdifsig,mype,nfldsig)
         call tintrp31(ges_v,vgesin,dlat,dlon,dpres,dtime, &
@@ -748,9 +752,9 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
         if(sfc_data .or. dpres < one) then
            drpx=0.005_r_kind*abs(dstn-zsges)*(one-fact)
         end if
- 
+
 !       Compute observation pressure (only used for diagnostics)
-        
+
         if (twodvar_regional) then
            presw = ten*exp(data(ipres,i))
         else
@@ -769,7 +773,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
               z1=zges(k1); p1=prsltmp(k1)
               z2=zges(k2); p2=prsltmp(k2)
            endif
-        
+
            dz21     = z2-z1
            dlnp21   = p2-p1
            dz       = zob-z1
@@ -795,9 +799,9 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
 !       Put obs pressure in correct units to get grid coord. number
         dpres=log(exp(dpres)*prsfc)
         call grdcrd1(dpres,prsltmp(1),nsig,-1)
- 
+
 !       Interpolate guess u and v to observation location and time.
- 
+
         call tintrp31(ges_u,ugesin,dlat,dlon,dpres,dtime, &
            hrdifsig,mype,nfldsig)
         call tintrp31(ges_v,vgesin,dlat,dlon,dpres,dtime, &
@@ -837,7 +841,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
               skint = data(iskint,i)
               call comp_fact10(dlat,dlon,dtime,skint,sfcr,isli,mype,factw)
            end if
- 
+
            call tintrp2a1(ges_tv,tges,dlat,dlon,dtime,hrdifsig,&
               nsig,mype,nfldsig)
 !          Apply 10-meter wind reduction factor to guess winds
@@ -846,19 +850,19 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
               term=(prsln2-dpressave)/(prsln2-dx10)
               factw=one-term+factw*term
            end if
-           ugesin=factw*ugesin   
+           ugesin=factw*ugesin
            vgesin=factw*vgesin
 
            if (save_jacobian) then
               dhx_dx_u%val = factw * dhx_dx_u%val
-              dhx_dx_v%val = factw * dhx_dx_v%val 
+              dhx_dx_v%val = factw * dhx_dx_v%val
            endif
         end if
-       
+
 !       Get approx k value of sfc by using surface pressure
         sfcchk=log(psges)
         call grdcrd1(sfcchk,prsltmp(1),nsig,-1)
- 
+
      endif
 
 
@@ -887,8 +891,8 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
      dudiff=uob-ugesin
      dvdiff=vob-vgesin
      spdb=sqrt(uob**2+vob**2)-sqrt(ugesin**2+vgesin**2)
-    
-!    Setup dynamic ob error specification for aircraft recon in hurricanes 
+
+!    Setup dynamic ob error specification for aircraft recon in hurricanes
      if (aircraft_recon) then
        if (itype==236) then
          magomb=sqrt(dudiff*dudiff+dvdiff*dvdiff)
@@ -937,9 +941,9 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
      if ( qc_satwnds ) then
         if (itype >=240 .and. itype <=260) then
            call intrp2a11(tropprs,trop5,dlat,dlon,mype)
-           if(presw < trop5-r50) error=zero            ! tropopose check for all satellite winds 
-        endif  
-   
+           if(presw < trop5-r50) error=zero            ! tropopose check for all satellite winds
+        endif
+
         if(itype >=240 .and. itype <=260) then
            if(i_gsdqc==2) then
               prsfc = r10*psges
@@ -977,7 +981,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
      if (itype==247) then
         prsfc = r10*psges       ! surface pressure in hPa
 
-!       Compute observed and guess wind speeds (m/s).  
+!       Compute observed and guess wind speeds (m/s).
         spdges = sqrt(ugesin* ugesin +vgesin* vgesin )
 
 !       Set and compute GOES CAWV specific departure parameters
@@ -991,7 +995,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
               error = zero
            endif
         endif
-! check for direction departure gt 50 deg 
+! check for direction departure gt 50 deg
         wdirdiffmax=50._r_kind
         call getwdir(uob,vob,wdirob)
         call getwdir(ugesin,vgesin,wdirgesin)
@@ -1000,16 +1004,16 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            error = zero
         endif
      endif
-   
+
 !    QC MODIS winds
      if (itype==257 .or. itype==258 .or. itype==259 .or. itype ==260) then
 !       Get guess values of tropopause pressure and sea/land/ice
 !       mask at observation location
         prsfc = r10*prsfc       ! surface pressure in hPa
 
-!       Compute observed and guess wind speeds (m/s).  
+!       Compute observed and guess wind speeds (m/s).
         spdges = sqrt(ugesin* ugesin +vgesin* vgesin )
- 
+
 !       Set and computes modis specific qc parameters
         LNVD_wspd = spdob
         LNVD_omb = sqrt(dudiff*dudiff + dvdiff*dvdiff)
@@ -1038,7 +1042,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            error = zero
         endif
      endif                                                  ! end if all satellite winds
-     
+
 
 !    QC WindSAT winds
      if (itype==289) then
@@ -1060,12 +1064,12 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
         dvdiff_opp = -vob - vgesin
         vecdiff = sqrt(dudiff**2 + dvdiff**2)
         vecdiff_opp = sqrt(dudiff_opp**2 + dvdiff_opp**2)
-        ascat_vec = sqrt((dudiff**2 + dvdiff**2)/spdob**2)       
+        ascat_vec = sqrt((dudiff**2 + dvdiff**2)/spdob**2)
 
         if ( abs(dudiff) > qcu  .or. &       ! u component check
              abs(dvdiff) > qcv  .or. &       ! v component check
              vecdiff > vecdiff_opp ) then    ! ambiguity check
- 
+
            error = zero
         endif
      endif
@@ -1087,7 +1091,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
         endif
      endif
 
-!    QC OSCAT winds     
+!    QC OSCAT winds
      if (itype==291) then
         qcu = r6
         qcv = r6
@@ -1101,13 +1105,13 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
 !        else
 !           write(6,2000) "999291291", data(ilate,i), &
 !                      data(ilone,i), uob, vob, ugesin, vgesin, &
-!                      jiter 
+!                      jiter
 !        endif
 
         if (spdob > r20 .or. &
             abs(dudiff) > qcu .or. &
             oscat_vec > r0_1 .or. &
-            abs(dvdiff) > qcv) then                                               
+            abs(dvdiff) > qcv) then
            error = zero
         endif
      endif
@@ -1128,7 +1132,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
         error=one/magoberr
         ratio_errors=one
      end if
- 
+
 !    Gross error checks
      obserror = one/max(ratio_errors*error,tiny_r_kind)
      obserrlm = max(cermin(ikx),min(cermax(ikx),obserror))
@@ -1216,7 +1220,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            dvdiff=dvdiff+data(iptrbv,i)/error/ratio_errors
         endif
      endif
- 
+
      valu     = error*dudiff
      valv     = error*dvdiff
      if(nvqc .and. ibeta(ikx) >0  ) ratio_errors=0.8_r_kind*ratio_errors
@@ -1272,7 +1276,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
               bwork(k,ikx,3,nn) = bwork(k,ikx,3,nn)+ressw          ! (o-g)**2
               bwork(k,ikx,4,nn) = bwork(k,ikx,4,nn)+val2*rat_err2  ! penalty
               bwork(k,ikx,5,nn) = bwork(k,ikx,5,nn)+valqc2         ! nonlin qc penalty
- 
+
            end if
         end do
      end if
@@ -1290,7 +1294,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
 
 !    If obs is "acceptable", load array with obs info for use
 !    in inner loop minimization (int* and stp* routines)
- 
+
      if (.not. last .and. muse(i)) then
 
         allocate(my_head)
@@ -1313,7 +1317,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
         my_head%ures=dudiff
         my_head%vres=dvdiff
         my_head%err2=error**2
-        my_head%raterr2=ratio_errors **2  
+        my_head%raterr2=ratio_errors **2
         my_head%time = dtime
         my_head%b=cvar_b(ikx)
         my_head%pg=cvar_pg(ikx)
@@ -1356,7 +1360,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            my_head%diagu => my_diagu
            my_head%diagv => my_diagv
         endif ! (luse_obsdiag)
- 
+
         my_head => null()
      end if
 
@@ -1371,14 +1375,14 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
         else
            err_final = huge_single
         endif
- 
+
         errinv_input = huge_single
         errinv_adjst = huge_single
         errinv_final = huge_single
         if (err_input>tiny_r_kind) errinv_input = one/err_input
         if (err_adjst>tiny_r_kind) errinv_adjst = one/err_adjst
         if (err_final>tiny_r_kind) errinv_final = one/err_final
- 
+
         if (binary_diag) call contents_binary_diag_(my_diagu,my_diagv)
         if (netcdf_diag) call contents_netcdf_diag_(my_diagu,my_diagv)
 
@@ -1408,7 +1412,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            my_head%elat= data(ilate,i)
            my_head%elon= data(ilone,i)
 
-!!! find uob and vob 
+!!! find uob and vob
            uob = data(iuob,i)
            vob = data(ivob,i)
 
@@ -1484,7 +1488,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
        write(7)' uv',nchar,nreal,ii,mype,ioff0
        write(7)cdiagbuf(1:ii),rdiagbuf(:,1:ii)
        deallocate(cdiagbuf,rdiagbuf)
-  
+
        if (twodvar_regional) then
           write(7)cprvstg(1:ii),csprvstg(1:ii)
           deallocate(cprvstg,csprvstg)
@@ -1512,7 +1516,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   proceed=proceed.and.ivar>0
   call gsi_metguess_get ('var::tv', ivar, istatus )
   proceed=proceed.and.ivar>0
-  end subroutine check_vars_ 
+  end subroutine check_vars_
 
   subroutine init_vars_
 
@@ -1677,19 +1681,19 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   subroutine contents_binary_diag_(udiag,vdiag)
      type(obs_diag),pointer,intent(in):: udiag,vdiag
         cdiagbuf(ii)    = station_id         ! station id
- 
+
         rdiagbuf(1,ii)  = ictype(ikx)        ! observation type
         rdiagbuf(2,ii)  = icsubtype(ikx)     ! observation subtype
 
         rdiagbuf(3,ii)  = data(ilate,i)      ! observation latitude (degrees)
         rdiagbuf(4,ii)  = data(ilone,i)      ! observation longitude (degrees)
-        rdiagbuf(5,ii)  = data(ielev,i)      ! station elevation (meters) 
+        rdiagbuf(5,ii)  = data(ielev,i)      ! station elevation (meters)
         rdiagbuf(6,ii)  = presw              ! observation pressure (hPa)
         rdiagbuf(7,ii)  = data(ihgt,i)       ! observation height (meters)
         rdiagbuf(8,ii)  = dtime-time_offset  ! obs time (hours relative to analysis time)
 
         rdiagbuf(9,ii)  = data(iqc,i)        ! input prepbufr qc or event mark
-        rdiagbuf(10,ii) = data(ihil,i)       ! hilbert curve weight 
+        rdiagbuf(10,ii) = data(ihil,i)       ! hilbert curve weight
         rdiagbuf(11,ii) = data(iuse,i)       ! read_prepbufr data usage flag
         if(muse(i)) then
            rdiagbuf(12,ii) = one             ! analysis usage flag (1=use, -1=not used)
@@ -1822,7 +1826,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
 
            call nc_diag_metadata("Wind_Reduction_Factor_at_10m", sngl(factw)       )
 
-! Write out in nc diag the extra vars from cdata_all (see read_satwnd.f90)        
+! Write out in nc diag the extra vars from cdata_all (see read_satwnd.f90)
 
            if(itype >=240 .and. itype <=260) then
              call nc_diag_metadata("SWCM_spec_type",          sngl(data(iswcm,i)))
@@ -1918,8 +1922,8 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            call nc_diag_metadata("Dominant_Sfc_Type", data(idomsfc,i)              )
            call nc_diag_metadata("surface_pressure",sngl(psges*r1000))
            call nc_diag_metadata("surface_geopotential_height",sngl(zsges))
-           call nc_diag_data2d("geopotential_height", sngl(zges+zsges))
-           call nc_diag_data2d("atmosphere_pressure_coordinate", sngl(prsltmp*r1000))
+           call nc_diag_data2d("geopotential_height", sngl(zges2+zsges))
+           call nc_diag_data2d("atmosphere_pressure_coordinate", sngl(prsltmp2*r1000))
            call nc_diag_data2d("atmosphere_pressure_coordinate_interface", sngl(prsitmp*r1000))
            call nc_diag_data2d("virtual_temperature", sngl(tges))
            call nc_diag_data2d("eastward_wind", sngl(uges))
