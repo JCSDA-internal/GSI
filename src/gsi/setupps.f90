@@ -168,7 +168,7 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
   real(r_kind) rdelz,rdp,halfpi,obserror,obserrlm,drdp,residual,ratio
   real(r_kind) errinv_input,errinv_adjst,errinv_final
   real(r_kind) err_input,err_adjst,err_final,tfact
-  real(r_kind) zsges,pgesorig,rwgt
+  real(r_kind) zsges,pgesorig,rwgt, factw, sfcr, landfrac
   real(r_kind) r0_005,r0_2,r2_5,tmin,tmax,half_tlapse
   real(r_kind) ratio_errors,error,dhgt,ddiff,dtemp
   real(r_kind) val2,ress,ressw2,val,valqc
@@ -181,7 +181,7 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
   real(r_kind),dimension(nele,nobs):: data
   real(r_single),allocatable,dimension(:,:)::rdiagbuf
 
-  integer(i_kind) ier,ilon,ilat,ipres,ihgt,itemp,id,itime,ikx,iqc,iptrb,ijb
+  integer(i_kind) ier,ilon,ilat,ipres,ihgt,itemp,id,itime,ikx,iqc,iptrb,ijb,isli
   integer(i_kind) ier2,iuse,ilate,ilone,istnelv,idomsfc,izz,iprvd,isprvd
   integer(i_kind) ikxx,nn,ibin,ioff,ioff0
   integer(i_kind) i,nchar,nreal,ii,jj,k,l,mm1
@@ -325,6 +325,7 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
 
   call dtime_setup()
   do i = 1,nobs
+     isli = -1
      dtime=data(itime,i)
      call dtime_check(dtime, in_curbin, in_anybin)
      if(.not.in_anybin) cycle
@@ -414,6 +415,21 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
       msges=1
     endif
     
+    isli = data(idomsfc,i) ! dominate surface type
+
+     ! pre-set a surface roughness no lower than 0.1 cm
+     ! pre-set wind_reduction_factor to 1.0
+     ! pre-set land_area_fraction to 0.0 for certain ocean/sea data, otherwise 1.0
+     !  this will not be correct for satwind or aircraft data, but mostly correct otherwise
+     sfcr = 0.1
+     factw=one
+     if (itype.eq.180 .or. itype.eq.182 .or. itype.eq.183 .or. itype.eq.184 .or.       &
+             itype.eq.189 .or. itype.eq.190 .or. itype.eq.191 .or. itype.eq.194 .or.   &
+             itype.eq.199 .or. isli.eq.0) then
+        landfrac = 0.0
+     else
+        landfrac = 1.0
+     endif
 
 
 ! Convert pressure to grid coordinates
@@ -967,13 +983,13 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
               call nc_diag_metadata("Analysis_Use_Flag",    sngl(-one)             )              
            endif
 
-           call nc_diag_metadata("Errinv_Input",            sngl(errinv_input)     )
-           call nc_diag_metadata("Errinv_Adjust",           sngl(errinv_adjst)     )
-           call nc_diag_metadata("Errinv_Final",            sngl(errinv_final)     )
+           call nc_diag_metadata("Errinv_Input",            sngl(errinv_input/r100)     )
+           call nc_diag_metadata("Errinv_Adjust",           sngl(errinv_adjst/r100)     )
+           call nc_diag_metadata("Errinv_Final",            sngl(errinv_final/r100)     )
 
-           call nc_diag_metadata("Observation",                   sngl(pob)        )
-           call nc_diag_metadata("Obs_Minus_Forecast_adjusted",   sngl(pob-pges)   )
-           call nc_diag_metadata("Obs_Minus_Forecast_unadjusted", sngl(pob-pgesorig))
+           call nc_diag_metadata("Observation",                   sngl(pob*r100)        )
+           call nc_diag_metadata("Obs_Minus_Forecast_adjusted",   sngl((pob-pges)*r100)   )
+           call nc_diag_metadata("Obs_Minus_Forecast_unadjusted", sngl((pob-pgesorig)*r100))
  
           if (lobsdiagsave) then
 
@@ -1008,12 +1024,9 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
            ! geovals for JEDI UFO
            call nc_diag_metadata("surface_geopotential_height", sngl(zsges))
            call nc_diag_metadata("surface_pressure", sngl(pgesorig*r100))
-           !call nc_diag_metadata("surface_roughness", sngl())
            !call nc_diag_metadata("surface_height", sngl())
-           !call nc_diag_metadata("skin_temperature", sngl(tgges))
            !call nc_diag_metadata("2m_temperature", sngl(tgges))
            !call nc_diag_metadata("2m_specific_humidity", sngl())
-           call nc_diag_metadata("landmask", sngl(msges))
            call nc_diag_data2d("geopotential_height", sngl(zsges+zges))
            call nc_diag_data2d("atmosphere_pressure_coordinate", sngl(prsltmp2*r1000))
            call nc_diag_data2d("atmosphere_pressure_coordinate_interface", sngl(prsitmp*r1000))
@@ -1023,6 +1036,9 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
            call nc_diag_data2d("northward_wind", sngl(utmp))
            call nc_diag_data2d("eastward_wind", sngl(vtmp))
            call nc_diag_metadata("surface_temperature", sngl(tges))
+           call nc_diag_metadata("surface_roughness", sngl(sfcr/r100))
+           call nc_diag_metadata("landmask", sngl(landfrac))
+           call nc_diag_metadata("Wind_Reduction_Factor_at_10m", sngl(factw))
 
 
   end subroutine contents_netcdf_diag_

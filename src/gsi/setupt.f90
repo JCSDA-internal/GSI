@@ -61,7 +61,7 @@ subroutine setupt(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
 
   use constants, only: zero, one, four,t0c,rd_over_cp,three,rd_over_cp_mass,ten
   use constants, only: tiny_r_kind,half,two
-  use constants, only: huge_single,r1000,wgtlim,r10,fv
+  use constants, only: huge_single,r1000,wgtlim,r10,fv,r100
   use constants, only: one_quad
   use convinfo, only: nconvtype,cermin,cermax,cgross,cvar_b,cvar_pg,ictype,icsubtype
   use convinfo, only: ibeta,ikapa
@@ -255,7 +255,7 @@ subroutine setupt(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   real(r_kind) rsig,drpx,rsigp
   real(r_kind) psges,sfcchk,pres_diff,rlow,rhgh,ramp
   real(r_kind) pof_idx,poaf,effective
-  real(r_kind) tges,zsges
+  real(r_kind) tges,zsges, factw, sfcr, landfrac
   real(r_kind) obserror,ratio,val2,obserrlm,ratiosfc
   real(r_kind) residual,ressw2,scale,ress,ratio_errors,tob,ddiff
   real(r_kind) val,valqc,dlon,dlat,dtime,dpres,error,prest,rwgt,var_jb
@@ -284,7 +284,7 @@ subroutine setupt(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   integer(i_kind) i,j,nchar,nreal,k,ii,iip,jj,l,nn,ibin,idia,idia0,ix,ijb
   integer(i_kind) mm1,jsig,iqt
   integer(i_kind) itype,msges
-  integer(i_kind) ier,ilon,ilat,ipres,itob,id,itime,ikx,iqc,iptrb,icat,ipof,ivvlc,idx
+  integer(i_kind) ier,ilon,ilat,ipres,itob,id,itime,ikx,iqc,iptrb,icat,ipof,ivvlc,idx,isli
   integer(i_kind) ier2,iuse,ilate,ilone,ikxx,istnelv,iobshgt,izz,iprvd,isprvd
   integer(i_kind) regime
   integer(i_kind) idomsfc,iskint,iff10,isfcr
@@ -470,6 +470,7 @@ subroutine setupt(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   rsigp=rsig+one
   call dtime_setup()
   do i=1,nobs
+     isli = -1
      dtime=data(itime,i)
      call dtime_check(dtime, in_curbin, in_anybin)
      if(.not.in_anybin) cycle
@@ -652,6 +653,22 @@ subroutine setupt(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
 ! wind v-component at obs location/times
      call tintrp2a1(ges_v,vgestmp,dlat,dlon,dtime,hrdifsig,&
           nsig,mype,nfldsig)
+
+    isli = data(idomsfc,i) ! dominate surface type
+
+     ! pre-set a surface roughness no lower than 0.1 cm
+     ! pre-set wind_reduction_factor to 1.0
+     ! pre-set land_area_fraction to 0.0 for certain ocean/sea data, otherwise 1.0
+     !  this will not be correct for satwind or aircraft data, but mostly correct otherwise
+     sfcr = 0.1
+     factw=one
+     if (itype.eq.180 .or. itype.eq.182 .or. itype.eq.183 .or. itype.eq.184 .or.       &
+             itype.eq.189 .or. itype.eq.190 .or. itype.eq.191 .or. itype.eq.194 .or.   &
+             itype.eq.199 .or. isli.eq.0) then
+        landfrac = 0.0
+     else
+        landfrac = 1.0
+     endif
 
 
      drpx=zero
@@ -1737,6 +1754,9 @@ subroutine setupt(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
     call nc_diag_data2d("eastward_wind", sngl(ugestmp))
     call nc_diag_data2d("northward_wind", sngl(vgestmp))
     call nc_diag_metadata("surface_temperature", sngl(sfctges))
+    call nc_diag_metadata("surface_roughness", sngl(sfcr/r100))
+    call nc_diag_metadata("landmask", sngl(landfrac))
+    call nc_diag_metadata("Wind_Reduction_Factor_at_10m", sngl(factw))
 
   end subroutine contents_netcdf_diag_
 

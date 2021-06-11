@@ -261,7 +261,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   real(r_kind) uob_reg,vob_reg,uob_e,vob_e,dlon_e,uges_e,vges_e,dudiff_e,dvdiff_e
   real(r_kind) dz,zob,z1,z2,p1,p2,dz21,dlnp21,spdb,dstn
   real(r_kind) errinv_input,errinv_adjst,errinv_final
-  real(r_kind) err_input,err_adjst,err_final,skint,sfcr
+  real(r_kind) err_input,err_adjst,err_final,skint,sfcr,landfrac
   real(r_kind) dudiff_opp, dvdiff_opp, vecdiff, vecdiff_opp
   real(r_kind) dudiff_opp_rs, dvdiff_opp_rs, vecdiff_rs, vecdiff_opp_rs
   real(r_kind) oscat_vec,ascat_vec,rapidscat_vec
@@ -468,6 +468,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   num_bad_ikx=0
   loop_for_all_obs: &
   do i=1,nobs
+     isli = -1
      dtime=data(itime,i)
      call dtime_check(dtime, in_curbin, in_anybin)
      if(.not.in_anybin) cycle
@@ -589,6 +590,20 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
 !    sea level.  Type 229=pibal profiler is reported using
 !    geopotenital height.  Some type 221=pibal wind observations are
 !    also repoted using geopotential height.
+
+    ! pre-set a surface roughness no lower than 0.1 cm
+     ! pre-set wind_reduction_factor to 1.0
+     ! pre-set land_area_fraction to 0.0 for certain ocean/sea data, otherwise 1.0
+     !  this will not be correct for satwind or aircraft data, but mostly correct otherwise
+     sfcr = 0.1
+     factw=one
+     if (itype.eq.280 .or. itype.eq.282 .or. itype.eq.283 .or. itype.eq.284 .or.       &
+             itype.eq.289 .or. itype.eq.290 .or. itype.eq.291 .or. itype.eq.294 .or.   &
+             itype.eq.299 .or. isli.eq.0) then
+        landfrac = 0.0
+     else
+        landfrac = 1.0
+     endif
 
      msges = 2
      sfc_data = (itype >=280 .and. itype < 300)
@@ -748,6 +763,8 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
               dhx_dx_v%val = factw * dhx_dx_v%val
            endif
         endif
+        if (skint < 190) skint = 280
+        if (skint > 360) skint = 280
 
         if(sfc_data .or. dpres < one) then
            drpx=0.005_r_kind*abs(dstn-zsges)*(one-fact)
@@ -858,12 +875,17 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
               dhx_dx_v%val = factw * dhx_dx_v%val
            endif
         end if
+        if (skint < 190) skint = 280
+        if (skint > 360) skint = 280
 
 !       Get approx k value of sfc by using surface pressure
         sfcchk=log(psges)
         call grdcrd1(sfcchk,prsltmp(1),nsig,-1)
 
      endif
+
+     sfcr = MAX(0.1, MIN(sfcr, 10000.0))
+     factw = MAX(0.01, MIN(factw, 1.0))
 
 
 !    Checks based on observation location relative to model surface and top
@@ -1919,7 +1941,7 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            ! For consistency with all other variable files (t, q, ps, etc.) save
            ! a bunch of additional variables.
 
-           call nc_diag_metadata("Dominant_Sfc_Type", data(idomsfc,i)              )
+           !call nc_diag_metadata("Dominant_Sfc_Type", data(idomsfc,i)              )
            call nc_diag_metadata("surface_pressure",sngl(psges*r1000))
            call nc_diag_metadata("surface_geopotential_height",sngl(zsges))
            call nc_diag_data2d("geopotential_height", sngl(zges2+zsges))
@@ -1930,9 +1952,9 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            call nc_diag_data2d("northward_wind", sngl(vges))
            call nc_diag_data2d("air_temperature", sngl(tsentmp))
            call nc_diag_data2d("specific_humidity", sngl(qges))
-           call nc_diag_metadata("skin_temperature",sngl(skint))
            call nc_diag_metadata("surface_roughness", sngl(sfcr/r100))
            call nc_diag_metadata("surface_temperature", sngl(sfctges))
+           call nc_diag_metadata("landmask", sngl(landfrac))
 
 
   end subroutine contents_netcdf_diag_

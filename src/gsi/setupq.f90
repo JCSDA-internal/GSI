@@ -216,7 +216,7 @@ subroutine setupq(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   real(r_kind) ratio_errors,dlat,dlon,dtime,dpres,rmaxerr,error
   real(r_kind) rsig,dprpx,rlow,rhgh,presq,tfact,ramp
   real(r_kind) psges,sfcchk,ddiff,errorx
-  real(r_kind) zsges
+  real(r_kind) zsges, factw, sfcr, landfrac
   real(r_kind) sfctges
   real(r_kind) cg_t,cvar,wgt,rat_err2,qcgross
   real(r_kind) grsmlt,ratio,val2,obserror
@@ -237,7 +237,7 @@ subroutine setupq(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
 
 
   integer(i_kind) i,nchar,nreal,ii,l,jj,mm1,itemp,iip
-  integer(i_kind) jsig,itype,k,nn,ikxx,iptrb,ibin,ioff,ioff0,icat,ijb
+  integer(i_kind) jsig,itype,k,nn,ikxx,iptrb,ibin,ioff,ioff0,icat,ijb,isli
   integer(i_kind) ier,ilon,ilat,ipres,iqob,id,itime,ikx,iqmax,iqc
   integer(i_kind) ier2,iuse,ilate,ilone,istnelv,iobshgt,izz,iprvd,isprvd
   integer(i_kind) idomsfc,iderivative
@@ -408,6 +408,7 @@ subroutine setupq(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
 ! Prepare specific humidity data
   call dtime_setup()
   do i=1,nobs
+     isli = -1
      dtime=data(itime,i)
      call dtime_check(dtime, in_curbin, in_anybin)
      if(.not.in_anybin) cycle
@@ -500,6 +501,22 @@ subroutine setupq(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
     ! surface temperature
     call tintrp31(ges_tv,sfctges,dlat,dlon,log(psges),dtime, &
          hrdifsig,mype,nfldsig)
+
+    isli = data(idomsfc,i) ! dominate surface type
+
+     ! pre-set a surface roughness no lower than 0.1 cm
+     ! pre-set wind_reduction_factor to 1.0
+     ! pre-set land_area_fraction to 0.0 for certain ocean/sea data, otherwise 1.0
+     !  this will not be correct for satwind or aircraft data, but mostly correct otherwise
+     sfcr = 0.1
+     factw=one
+     if (itype.eq.180 .or. itype.eq.182 .or. itype.eq.183 .or. itype.eq.184 .or.       &
+             itype.eq.189 .or. itype.eq.190 .or. itype.eq.191 .or. itype.eq.194 .or.   &
+             itype.eq.199 .or. isli.eq.0) then
+        landfrac = 0.0
+     else
+        landfrac = 1.0
+     endif
 
      presq=r10*exp(dpres)
      itype=ictype(ikx)
@@ -1354,6 +1371,9 @@ subroutine setupq(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            call nc_diag_data2d("specific_humidity", sngl(qtmp))
            call nc_diag_data2d("northward_wind", sngl(utmp))
            call nc_diag_data2d("eastward_wind", sngl(vtmp))
+           call nc_diag_metadata("surface_roughness", sngl(sfcr/r100))
+           call nc_diag_metadata("landmask", sngl(landfrac))
+           call nc_diag_metadata("Wind_Reduction_Factor_at_10m", sngl(factw))
 
   end subroutine contents_netcdf_diag_
 
